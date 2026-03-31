@@ -1,0 +1,25 @@
+{
+  "written_at": "2026-03-31T21:20:00.480789+00:00",
+  "columns": {
+    "processing_time_ms": {
+      "mean": 1630.841699,
+      "stddev": 710.55382
+    },
+    "token_input": {
+      "mean": 3955.837838,
+      "stddev": 1230.818816
+    },
+    "token_output": {
+      "mean": 915.34749,
+      "stddev": 307.525727
+    },
+    "fact_confidence": {
+      "mean": 0.772533,
+      "stddev": 0.122569
+    },
+    "fact_page_ref": {
+      "mean": 2.859504,
+      "stddev": 1.292967
+    }
+  }
+}
