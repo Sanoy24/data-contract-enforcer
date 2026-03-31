@@ -1,0 +1,87 @@
+version: 2
+models:
+- name: week3_document_refinery_extractions
+  description: 'Auto-generated data contract for week3-document-refinery-extractions.
+    Source: outputs/week3/extractions.jsonl. Each clause is machine-checkable.'
+  columns:
+  - name: doc_id
+    description: ''
+    tests:
+    - not_null
+    - unique
+  - name: source_path
+    description: ''
+    tests:
+    - not_null
+  - name: source_hash
+    description: ''
+    tests:
+    - not_null
+  - name: extraction_model
+    description: 'Must be one of: claude-3-haiku-20240307, claude-3-5-sonnet-20241022'
+    tests:
+    - not_null
+    - accepted_values:
+        values:
+        - claude-3-haiku-20240307
+        - claude-3-5-sonnet-20241022
+  - name: processing_time_ms
+    description: Processing time in milliseconds. Must be non-negative.
+    tests:
+    - not_null
+  - name: extracted_at
+    description: ISO 8601 timestamp.
+    tests:
+    - not_null
+  - name: token_input
+    description: ''
+    tests:
+    - not_null
+  - name: token_output
+    description: ''
+    tests:
+    - not_null
+  - name: fact_fact_id
+    description: ''
+    tests:
+    - unique
+  - name: fact_text
+    description: ''
+  - name: fact_entity_refs
+    description: ''
+  - name: fact_confidence
+    description: Confidence score. Must remain 0.0-1.0 float. BREAKING if changed
+      to 0-100 integer scale.
+  - name: fact_page_ref
+    description: ''
+  - name: fact_source_excerpt
+    description: 'Must be one of: ...verbatim excerpt from source document...'
+    tests:
+    - accepted_values:
+        values:
+        - '...verbatim excerpt from source document...'
+  - name: entity_entity_id
+    description: ''
+    tests:
+    - unique
+  - name: entity_name
+    description: 'Must be one of: Acme Corp, John Smith, 2024-01-15, $2.5M, Austin
+      TX'
+    tests:
+    - accepted_values:
+        values:
+        - Acme Corp
+        - John Smith
+        - '2024-01-15'
+        - $2.5M
+        - Austin TX
+  - name: entity_type
+    description: ''
+  - name: entity_canonical_value
+    description: 'Must be one of: entity_0_canonical, entity_1_canonical, entity_2_canonical'
+    tests:
+    - accepted_values:
+        values:
+        - entity_0_canonical
+        - entity_1_canonical
+        - entity_2_canonical

@@ -1,0 +1,129 @@
+kind: DataContract
+apiVersion: v3.0.0
+id: week5-event-records
+info:
+  title: Week5 Event Records
+  version: 1.0.0
+  owner: week5-team
+  description: 'Auto-generated data contract for week5-event-records. Source: outputs/week5/events.jsonl.
+    Each clause is machine-checkable.'
+servers:
+  local:
+    type: local
+    path: outputs/week5/events.jsonl
+    format: jsonl
+terms:
+  usage: Internal inter-system data contract. Do not publish.
+  limitations: Confidence fields must remain in 0.0-1.0 float range.
+schema:
+  event_id:
+    type: string
+    required: true
+    format: uuid
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+  event_type:
+    type: string
+    required: true
+  aggregate_id:
+    type: string
+    required: true
+    format: uuid
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+  aggregate_type:
+    type: string
+    required: true
+    enum:
+    - Document
+    description: 'Must be one of: Document'
+  sequence_number:
+    type: integer
+    required: true
+    minimum: 1
+    description: Monotonically increasing per aggregate. No gaps or duplicates.
+    _observed_stats:
+      min: 1.0
+      max: 1.0
+      mean: 1.0
+      p25: 1.0
+      p50: 1.0
+      p75: 1.0
+      p95: 1.0
+      p99: 1.0
+      stddev: 0.0
+  schema_version:
+    type: string
+    required: true
+    enum:
+    - '1.0'
+    description: 'Must be one of: 1.0'
+  occurred_at:
+    type: string
+    required: true
+    format: date-time
+    description: ISO 8601 timestamp.
+  recorded_at:
+    type: string
+    required: true
+    format: date-time
+    description: ISO 8601 timestamp.
+  payload_detail:
+    type: string
+    required: true
+  payload_processed:
+    type: boolean
+    required: true
+  metadata_causation_id:
+    type: string
+    required: false
+    format: uuid
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+  metadata_correlation_id:
+    type: string
+    required: true
+    format: uuid
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+  metadata_user_id:
+    type: string
+    required: true
+    format: uuid
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+  metadata_source_service:
+    type: string
+    required: true
+    enum:
+    - week1-intent-correlator
+    - week2-digital-courtroom
+    - week3-document-refinery
+    description: 'Must be one of: week1-intent-correlator, week2-digital-courtroom,
+      week3-document-refinery'
+quality:
+  type: SodaChecks
+  specification:
+    checks for week5-event-records:
+    - row_count >= 1
+    - missing_count(event_id) = 0
+    - missing_count(event_type) = 0
+    - missing_count(aggregate_id) = 0
+    - missing_count(aggregate_type) = 0
+    - missing_count(sequence_number) = 0
+lineage:
+  upstream: []
+  downstream:
+  - id: file::src/week1/processor.py
+    description: Consumes data from week5 output
+    fields_consumed:
+    - event_id
+    - event_type
+    - aggregate_id
+    - aggregate_type
+    - sequence_number
+    breaking_if_changed: []
+  - id: file::src/week4/processor.py
+    description: Consumes data from week5 output
+    fields_consumed:
+    - event_id
+    - event_type
+    - aggregate_id
+    - aggregate_type
+    - sequence_number
+    breaking_if_changed: []

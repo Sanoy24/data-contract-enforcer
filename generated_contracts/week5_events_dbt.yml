@@ -1,0 +1,78 @@
+version: 2
+models:
+- name: week5_event_records
+  description: 'Auto-generated data contract for week5-event-records. Source: outputs/week5/events.jsonl.
+    Each clause is machine-checkable.'
+  columns:
+  - name: event_id
+    description: ''
+    tests:
+    - not_null
+    - unique
+  - name: event_type
+    description: ''
+    tests:
+    - not_null
+  - name: aggregate_id
+    description: ''
+    tests:
+    - not_null
+    - unique
+  - name: aggregate_type
+    description: 'Must be one of: Document'
+    tests:
+    - not_null
+    - accepted_values:
+        values:
+        - Document
+  - name: sequence_number
+    description: Monotonically increasing per aggregate. No gaps or duplicates.
+    tests:
+    - not_null
+  - name: schema_version
+    description: 'Must be one of: 1.0'
+    tests:
+    - not_null
+    - accepted_values:
+        values:
+        - '1.0'
+  - name: occurred_at
+    description: ISO 8601 timestamp.
+    tests:
+    - not_null
+  - name: recorded_at
+    description: ISO 8601 timestamp.
+    tests:
+    - not_null
+  - name: payload_detail
+    description: ''
+    tests:
+    - not_null
+  - name: payload_processed
+    description: ''
+    tests:
+    - not_null
+  - name: metadata_causation_id
+    description: ''
+    tests:
+    - unique
+  - name: metadata_correlation_id
+    description: ''
+    tests:
+    - not_null
+    - unique
+  - name: metadata_user_id
+    description: ''
+    tests:
+    - not_null
+    - unique
+  - name: metadata_source_service
+    description: 'Must be one of: week1-intent-correlator, week2-digital-courtroom,
+      week3-document-refinery'
+    tests:
+    - not_null
+    - accepted_values:
+        values:
+        - week1-intent-correlator
+        - week2-digital-courtroom
+        - week3-document-refinery
