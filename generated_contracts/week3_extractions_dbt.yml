@@ -14,7 +14,7 @@ models:
     tests:
     - not_null
   - name: source_hash
-    description: ''
+    description: SHA-256 hash. 64 hex characters.
     tests:
     - not_null
   - name: extraction_model

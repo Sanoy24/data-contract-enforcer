@@ -27,6 +27,8 @@ schema:
   source_hash:
     type: string
     required: true
+    pattern: ^[a-f0-9]{64}$
+    description: SHA-256 hash. 64 hex characters.
   extraction_model:
     type: string
     required: true
