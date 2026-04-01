@@ -151,7 +151,7 @@ def profile_column(series: pd.Series, col_name: str) -> dict:
                 pass  # Skip stats for columns with incompatible types
 
     # Detect dominant pattern for string columns
-    if series.dtype == "object":
+    if pd.api.types.is_object_dtype(series) or pd.api.types.is_string_dtype(series):
         non_null = series.dropna()
         if len(non_null) > 0:
             sample = non_null.head(20).tolist()
