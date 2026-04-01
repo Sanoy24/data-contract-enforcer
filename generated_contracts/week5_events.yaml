@@ -1,11 +1,11 @@
 kind: DataContract
 apiVersion: v3.0.0
-id: week5-event-records
+id: week5-events
 info:
-  title: Week5 Event Records
+  title: Week5 Events
   version: 1.0.0
   owner: week5-team
-  description: 'Auto-generated data contract for week5-event-records. Source: outputs/week5/events.jsonl.
+  description: 'Auto-generated data contract for week5-events. Source: outputs/week5/events.jsonl.
     Each clause is machine-checkable.'
 servers:
   local:
@@ -99,7 +99,7 @@ schema:
 quality:
   type: SodaChecks
   specification:
-    checks for week5-event-records:
+    checks for week5-events:
     - row_count >= 1
     - missing_count(event_id) = 0
     - missing_count(event_type) = 0
@@ -108,22 +108,4 @@ quality:
     - missing_count(sequence_number) = 0
 lineage:
   upstream: []
-  downstream:
-  - id: file::src/week1/processor.py
-    description: Consumes data from week5 output
-    fields_consumed:
-    - event_id
-    - event_type
-    - aggregate_id
-    - aggregate_type
-    - sequence_number
-    breaking_if_changed: []
-  - id: file::src/week4/processor.py
-    description: Consumes data from week5 output
-    fields_consumed:
-    - event_id
-    - event_type
-    - aggregate_id
-    - aggregate_type
-    - sequence_number
-    breaking_if_changed: []
+  downstream: []

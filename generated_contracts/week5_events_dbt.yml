@@ -1,7 +1,7 @@
 version: 2
 models:
-- name: week5_event_records
-  description: 'Auto-generated data contract for week5-event-records. Source: outputs/week5/events.jsonl.
+- name: week5_events
+  description: 'Auto-generated data contract for week5-events. Source: outputs/week5/events.jsonl.
     Each clause is machine-checkable.'
   columns:
   - name: event_id
