@@ -621,6 +621,73 @@ def run_validation(contract_path: str, data_path: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Enforcement mode logic
+# ---------------------------------------------------------------------------
+
+
+def apply_enforcement_mode(report: dict, mode: str) -> dict:
+    """Apply enforcement mode to a completed validation report.
+
+    AUDIT  — log only, never block pipeline.
+    WARN   — block on CRITICAL violations only.
+    ENFORCE — block on CRITICAL or HIGH violations.
+    """
+    blocking = []
+    for r in report.get("results", []):
+        if r["status"] != "FAIL":
+            continue
+        sev = r.get("severity", "LOW")
+        if mode == "ENFORCE" and sev in ("CRITICAL", "HIGH"):
+            blocking.append(r["check_id"])
+        elif mode == "WARN" and sev == "CRITICAL":
+            blocking.append(r["check_id"])
+        # AUDIT never blocks
+
+    if blocking:
+        action = "BLOCKED"
+    elif report.get("failed", 0) > 0:
+        action = "PASSED_WITH_WARNINGS" if mode != "AUDIT" else "LOGGED"
+    else:
+        action = "PASSED" if mode != "AUDIT" else "LOGGED"
+
+    report["mode"] = mode
+    report["enforcement_action"] = action
+    report["blocking_violations"] = blocking
+    return report
+
+
+def write_violation_log(report: dict, mode: str) -> None:
+    """Append FAIL results to violation_log/violations.jsonl."""
+    fails = [r for r in report.get("results", []) if r["status"] == "FAIL"]
+    if not fails:
+        return
+
+    log_dir = Path("violation_log")
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path = log_dir / "violations.jsonl"
+
+    with open(log_path, "a", encoding="utf-8") as f:
+        for r in fails:
+            entry = {
+                "violation_id": str(uuid.uuid4()),
+                "check_id": r["check_id"],
+                "contract_id": report.get("contract_id", "unknown"),
+                "detected_at": datetime.now(timezone.utc).isoformat(),
+                "severity": r.get("severity", "LOW"),
+                "column_name": r.get("column_name", ""),
+                "message": r.get("message", ""),
+                "actual_value": r.get("actual_value", ""),
+                "expected": r.get("expected", ""),
+                "records_failing": r.get("records_failing", 0),
+                "mode": mode,
+                "enforcement_action": report.get("enforcement_action", "LOGGED"),
+            }
+            f.write(json.dumps(entry, default=str) + "\n")
+
+    print(f"\nViolation log updated: {log_path} ({len(fails)} entries)")
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -639,28 +706,49 @@ def main():
         default=None,
         help="Output path for validation report JSON",
     )
+    parser.add_argument(
+        "--mode",
+        choices=["AUDIT", "WARN", "ENFORCE"],
+        default="AUDIT",
+        help="AUDIT=log only, WARN=block CRITICAL, ENFORCE=block CRITICAL+HIGH",
+    )
 
     args = parser.parse_args()
+
+    mode = args.mode
 
     print(f"\n{'='*60}")
     print(f"ValidationRunner")
     print(f"{'='*60}")
     print(f"  Contract: {args.contract}")
     print(f"  Data: {args.data}")
+    print(f"  Mode: {mode}")
     print()
 
     report = run_validation(args.contract, args.data)
 
+    # Apply enforcement mode
+    report = apply_enforcement_mode(report, mode)
+
     print(f"\nResults: {report['total_checks']} checks")
-    print(f"  ✅ PASS: {report['passed']}")
-    print(f"  ❌ FAIL: {report['failed']}")
-    print(f"  ⚠️  WARN: {report['warned']}")
-    print(f"  🔴 ERROR: {report['errored']}")
+    print(f"  PASS: {report['passed']}")
+    print(f"  FAIL: {report['failed']}")
+    print(f"  WARN: {report['warned']}")
+    print(f"  ERROR: {report['errored']}")
+    print(f"  Mode: {mode} -> {report['enforcement_action']}")
+
+    if report["blocking_violations"]:
+        print(f"\n  Blocking violations:")
+        for cv in report["blocking_violations"]:
+            print(f"    - {cv}")
 
     # Print failures
     for r in report["results"]:
         if r["status"] in ("FAIL", "ERROR"):
             print(f"\n  [{r['status']}] {r['check_id']}: {r['message']}")
+
+    # Write violation log entries for FAIL results
+    write_violation_log(report, mode)
 
     # Write output
     if args.output:
@@ -668,16 +756,15 @@ def main():
         out_path.parent.mkdir(parents=True, exist_ok=True)
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2, default=str)
-        print(f"\n📄 Report written: {out_path}")
+        print(f"\nReport written: {out_path}")
     else:
-        # Auto-generate output path
         ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M")
         out_dir = Path("validation_reports")
         out_dir.mkdir(parents=True, exist_ok=True)
         out_path = out_dir / f"validation_{ts}.json"
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2, default=str)
-        print(f"\n📄 Report written: {out_path}")
+        print(f"\nReport written: {out_path}")
 
 
 if __name__ == "__main__":
