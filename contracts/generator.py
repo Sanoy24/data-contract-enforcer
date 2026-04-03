@@ -429,6 +429,92 @@ def build_contract(
 
 
 # ---------------------------------------------------------------------------
+# LLM annotation for ambiguous columns
+# ---------------------------------------------------------------------------
+
+# Known semantic markers — columns matching these don't need LLM annotation
+_KNOWN_MARKERS = (
+    "_id", "_at", "_time", "hash", "confidence", "score_", "processing_time",
+    "sequence_number", "_path", "_model", "_version", "_type", "_count",
+    "_tokens", "_cost", "_ref", "_refs", "_tags",
+)
+
+from contracts.llm_client import chat_completion, get_llm_config
+
+
+def _is_ambiguous(col_name: str, clause: dict) -> bool:
+    """Check if a column's business meaning is ambiguous from name alone."""
+    for marker in _KNOWN_MARKERS:
+        if marker in col_name.lower():
+            return False
+    # If it has a detected pattern (uuid, datetime, sha256) or enum, it's clear
+    if clause.get("format") or clause.get("enum") or clause.get("pattern"):
+        return False
+    return True
+
+
+def _llm_annotate(col_name: str, clause: dict, profile: dict, contract_id: str) -> dict:
+    """Call LLM to annotate an ambiguous column. Falls back to heuristic."""
+    sample_vals = profile.get("sample_values", [])[:5]
+    dtype = profile.get("dtype", "unknown")
+
+    prompt = (
+        f"Column '{col_name}' in dataset '{contract_id}'. "
+        f"Type: {dtype}. Sample values: {sample_vals}. "
+        "Provide: (a) a plain-English description of what this column likely represents, "
+        "(b) a business rule as a validation expression, "
+        "(c) any cross-column relationships you can infer."
+    )
+
+    cfg = get_llm_config()
+    text = chat_completion(prompt, max_tokens=300)
+    if text:
+        return {
+            "description": text[:500],
+            "business_rule": "See LLM response",
+            "cross_column_relationships": "",
+            "method": cfg["provider"],
+        }
+
+    # Heuristic fallback
+    desc = _heuristic_description(col_name, dtype, sample_vals)
+    return {
+        "description": desc,
+        "business_rule": f"type={dtype}, non-null" if profile.get("null_fraction", 0) == 0 else f"type={dtype}",
+        "cross_column_relationships": "",
+        "method": "heuristic",
+    }
+
+
+def _heuristic_description(col_name: str, dtype: str, samples: list) -> str:
+    """Generate a reasonable description from column name and samples."""
+    # Clean the column name for readability
+    readable = col_name.replace("_", " ").replace(".", " ").strip()
+    sample_str = ", ".join(str(s)[:50] for s in samples[:3]) if samples else "N/A"
+    return f"Auto-inferred: '{readable}' ({dtype}). Sample values: [{sample_str}]."
+
+
+def annotate_ambiguous_columns(
+    contract: dict, column_profiles: dict
+) -> dict:
+    """Add LLM annotations to ambiguous columns in the contract schema."""
+    schema = contract.get("schema", {})
+    annotated_count = 0
+
+    for col_name, clause in schema.items():
+        if _is_ambiguous(col_name, clause):
+            profile = column_profiles.get(col_name, {})
+            annotation = _llm_annotate(
+                col_name, clause, profile, contract.get("id", "unknown")
+            )
+            clause["llm_annotations"] = annotation
+            annotated_count += 1
+
+    print(f"  LLM annotations: {annotated_count} ambiguous columns annotated")
+    return contract
+
+
+# ---------------------------------------------------------------------------
 # Schema snapshot
 # ---------------------------------------------------------------------------
 
@@ -466,6 +552,11 @@ def main():
         default="generated_contracts/",
         help="Output directory for generated contracts",
     )
+    parser.add_argument(
+        "--registry",
+        default="contract_registry/subscriptions.yaml",
+        help="Path to contract registry subscriptions YAML",
+    )
 
     args = parser.parse_args()
 
@@ -502,13 +593,17 @@ def main():
     contract = build_contract(column_profiles, args.contract_id, args.source)
 
     # Step 5: Inject lineage
-    print("[5/6] Injecting lineage context...")
+    print("[5/7] Injecting lineage context...")
     contract = inject_lineage(contract, args.lineage, args.contract_id)
     num_downstream = len(contract.get("lineage", {}).get("downstream", []))
     print(f"  Found {num_downstream} downstream consumers")
 
-    # Step 6: Write outputs
-    print("[6/6] Writing contract files...")
+    # Step 6: LLM annotation for ambiguous columns
+    print("[6/7] Annotating ambiguous columns...")
+    contract = annotate_ambiguous_columns(contract, column_profiles)
+
+    # Step 7: Write outputs
+    print("[7/7] Writing contract files...")
     output_dir = Path(args.output)
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -549,9 +644,9 @@ def main():
     # Schema snapshot
     write_schema_snapshot(args.contract_id, yaml_path)
 
-    print(f"\n✅ Contract generated: {num_clauses} clauses")
+    print(f"\nContract generated: {num_clauses} clauses")
     if num_clauses < 8:
-        print(f"  ⚠  Warning: Only {num_clauses} clauses. Target is ≥8.")
+        print(f"  Warning: Only {num_clauses} clauses. Target is >=8.")
 
 
 if __name__ == "__main__":
