@@ -6,11 +6,11 @@ info:
   version: 1.0.0
   owner: week3-team
   description: 'Auto-generated data contract for week3-document-refinery-extractions.
-    Source: outputs/week3/extractions.jsonl. Each clause is machine-checkable.'
+    Source: outputs/week3/extractions_violated.jsonl. Each clause is machine-checkable.'
 servers:
   local:
     type: local
-    path: outputs/week3/extractions.jsonl
+    path: outputs/week3/extractions_violated.jsonl
     format: jsonl
 terms:
   usage: Internal inter-system data contract. Do not publish.
@@ -69,6 +69,12 @@ schema:
       p95: 5903.0
       p99: 5954.0
       stddev: 1230.8188
+    llm_annotations:
+      description: 'Auto-inferred: ''token input'' (int64). Sample values: [5854,
+        2798, 4281].'
+      business_rule: type=int64, non-null
+      cross_column_relationships: ''
+      method: heuristic
   token_output:
     type: integer
     required: true
@@ -82,6 +88,12 @@ schema:
       p95: 1357.0
       p99: 1499.0
       stddev: 307.5257
+    llm_annotations:
+      description: 'Auto-inferred: ''token output'' (int64). Sample values: [1161,
+        644, 860].'
+      business_rule: type=int64, non-null
+      cross_column_relationships: ''
+      method: heuristic
   fact_fact_id:
     type: string
     required: false
@@ -90,6 +102,13 @@ schema:
   fact_text:
     type: string
     required: false
+    llm_annotations:
+      description: 'Auto-inferred: ''fact text'' (str). Sample values: [The migration
+        to cloud infrastructure saved $180,0, Customer churn rate decreased to 4.2%
+        after the up, The API processes approximately 10,000 requests pe].'
+      business_rule: type=str
+      cross_column_relationships: ''
+      method: heuristic
   fact_entity_refs:
     type: string
     required: false
@@ -101,15 +120,15 @@ schema:
     description: Confidence score. Must remain 0.0-1.0 float. BREAKING if changed
       to 0-100 integer scale.
     _observed_stats:
-      min: 0.55
-      max: 0.98
-      mean: 0.7725
-      p25: 0.67
-      p50: 0.77
-      p75: 0.88
-      p95: 0.96
-      p99: 0.98
-      stddev: 0.1226
+      min: 55.0
+      max: 98.0
+      mean: 77.2533
+      p25: 67.0
+      p50: 77.0
+      p75: 88.0
+      p95: 96.0
+      p99: 98.0
+      stddev: 12.2569
   fact_page_ref:
     type: number
     required: false
