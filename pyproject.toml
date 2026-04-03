@@ -1,12 +1,14 @@
 [project]
 name = "data-contract-enforcer"
 version = "0.1.0"
-description = "Add your description here"
+description = "The Data Contract Enforcer turns every arrow in your inter-system data flow diagram into a formal, machine-checked promise."
 requires-python = ">=3.12"
 dependencies = [
+    "anthropic>=0.30.0",
     "gitpython>=3.1.46",
     "jsonschema>=4.26.0",
     "numpy>=2.4.4",
+    "openai>=1.0.0",
     "pandas>=3.0.2",
     "pyyaml>=6.0.3",
 ]
