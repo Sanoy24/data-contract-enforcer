@@ -1,0 +1,77 @@
+{
+  "report_id": "429e6e70-c917-4766-b808-e9619dc22fab",
+  "contract_id": "week3-document-refinery-extractions",
+  "generated_at": "2026-04-03T19:54:32.373055+00:00",
+  "snapshot_old": "20260403_195016",
+  "snapshot_new": "20260403_195027",
+  "compatibility_verdict": "BREAKING",
+  "total_changes": 1,
+  "breaking_changes": 1,
+  "compatible_changes": 0,
+  "diff": [
+    "  ! fact_confidence: 'fact_confidence' mean shifted dramatically: 0.7725 -> 77.2533. Possible scale change. [BREAKING, CRITICAL]"
+  ],
+  "changes": [
+    {
+      "field": "fact_confidence",
+      "change_type": "STATISTICAL_SHIFT",
+      "property": "mean",
+      "old": 0.7725,
+      "new": 77.2533,
+      "details": "'fact_confidence' mean shifted dramatically: 0.7725 -> 77.2533. Possible scale change.",
+      "compatibility": "BREAKING",
+      "severity": "CRITICAL",
+      "action": "Statistical shift detected in 'fact_confidence'. Mean changed from 0.7725 to 77.2533. Possible scale change (e.g., float 0.0-1.0 to int 0-100). CRITICAL: Requires migration plan with rollback."
+    }
+  ],
+  "blast_radius": {
+    "affected_subscribers": [
+      {
+        "subscriber_id": "week4-cartographer",
+        "contact": "week4-team@org.com"
+      },
+      {
+        "subscriber_id": "week7-ai-extensions",
+        "contact": "week7-team@org.com"
+      }
+    ],
+    "subscriber_count": 2
+  },
+  "per_consumer_failure_modes": [
+    {
+      "subscriber_id": "week4-cartographer",
+      "contact": "week4-team@org.com",
+      "affected_fields": [
+        "indirect impact via transitive dependency"
+      ],
+      "failure_mode": "Subscriber 'week4-cartographer' consumes ['doc_id', 'extracted_facts', 'extraction_model']. Breaking changes in ['fact_confidence'] may cause validation failures or silent data corruption.",
+      "validation_mode": "ENFORCE"
+    },
+    {
+      "subscriber_id": "week7-ai-extensions",
+      "contact": "week7-team@org.com",
+      "affected_fields": [
+        "indirect impact via transitive dependency"
+      ],
+      "failure_mode": "Subscriber 'week7-ai-extensions' consumes ['extracted_facts.confidence', 'extracted_facts.text', 'doc_id', 'source_path']. Breaking changes in ['fact_confidence'] may cause validation failures or silent data corruption.",
+      "validation_mode": "AUDIT"
+    }
+  ],
+  "migration_checklist": [
+    "1. Notify all affected subscribers listed in blast_radius.affected_subscribers",
+    "2. Review each breaking change and confirm no consumer relies on the removed/changed behavior",
+    "3. Statistical shift detected in 'fact_confidence'. Mean changed from 0.7725 to 77.2533. Possible scale change (e.g., float 0.0-1.0 to int 0-100). CRITICAL: Requires migration plan with rollback.",
+    "4. Update statistical baselines after migration",
+    "5. Run ValidationRunner in AUDIT mode for 2 weeks post-migration"
+  ],
+  "rollback_plan": {
+    "steps": [
+      "1. Revert to schema snapshot 20260403_195016",
+      "2. Re-deploy producer with previous schema version",
+      "3. Re-run ValidationRunner to confirm rollback success",
+      "4. Notify affected subscribers that rollback is complete"
+    ],
+    "estimated_downtime": "< 1 hour for Tier 1 (same-repo) rollback",
+    "data_loss_risk": "MEDIUM \u2014 records processed under new schema may need reprocessing"
+  }
+}
