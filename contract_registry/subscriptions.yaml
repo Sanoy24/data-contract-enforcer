@@ -1,0 +1,103 @@
+# Contract Registry — Subscription Declarations
+# Every inter-system data dependency must be listed here.
+# A subscription is a consumer's formal declaration of dependency.
+# breaking_fields identifies fields that, if changed, would break the consumer.
+
+subscriptions:
+  # Week 3 Document Refinery -> Week 4 Brownfield Cartographer
+  - contract_id: week3-document-refinery-extractions
+    subscriber_id: week4-cartographer
+    subscriber_team: week4
+    fields_consumed: [doc_id, extracted_facts, extraction_model]
+    breaking_fields:
+      - field: extracted_facts.confidence
+        reason: used for node ranking; scale change (0.0-1.0 vs 0-100) breaks ordering logic
+      - field: doc_id
+        reason: primary key used as node identity in lineage graph
+    validation_mode: ENFORCE
+    registered_at: "2025-01-10T09:00:00Z"
+    contact: week4-team@org.com
+
+  # Week 3 Document Refinery -> Week 7 AI Extensions
+  - contract_id: week3-document-refinery-extractions
+    subscriber_id: week7-ai-extensions
+    subscriber_team: week7
+    fields_consumed: [extracted_facts.confidence, extracted_facts.text, doc_id, source_path]
+    breaking_fields:
+      - field: extracted_facts.confidence
+        reason: AI extension embedding drift check baseline depends on confidence-weighted text selection
+      - field: extracted_facts.text
+        reason: embedding drift detection computes centroids from fact text values
+    validation_mode: AUDIT
+    registered_at: "2025-01-13T09:00:00Z"
+    contact: week7-team@org.com
+
+  # Week 4 Brownfield Cartographer -> Week 7 Violation Attributor
+  - contract_id: week4-brownfield-cartographer-lineage
+    subscriber_id: week7-violation-attributor
+    subscriber_team: week7
+    fields_consumed: [nodes, edges, snapshot_id, git_commit]
+    breaking_fields:
+      - field: edges
+        reason: blame chain traversal depends on edge source/target/relationship structure
+      - field: nodes
+        reason: node_id format used for upstream file resolution in attribution
+    validation_mode: ENFORCE
+    registered_at: "2025-01-13T09:00:00Z"
+    contact: week7-team@org.com
+
+  # Week 5 Event Sourcing -> Week 7 Schema Enforcer
+  - contract_id: week5-event-records
+    subscriber_id: week7-schema-enforcer
+    subscriber_team: week7
+    fields_consumed: [event_id, event_type, sequence_number, payload, occurred_at, recorded_at]
+    breaking_fields:
+      - field: sequence_number
+        reason: monotonic ordering enforced by contract; gap or duplicate breaks event replay
+      - field: event_type
+        reason: PascalCase enum validated against event schema registry
+    validation_mode: WARN
+    registered_at: "2025-01-13T09:00:00Z"
+    contact: week7-team@org.com
+
+  # LangSmith Traces -> Week 7 AI Extensions
+  - contract_id: langsmith-traces
+    subscriber_id: week7-ai-extensions
+    subscriber_team: week7
+    fields_consumed: [id, run_type, total_tokens, prompt_tokens, completion_tokens, total_cost, start_time, end_time]
+    breaking_fields:
+      - field: total_tokens
+        reason: token arithmetic contract (total = prompt + completion) used for cost validation
+      - field: run_type
+        reason: AI extension filters by run_type to compute per-type violation rates
+    validation_mode: AUDIT
+    registered_at: "2025-01-13T09:00:00Z"
+    contact: week7-team@org.com
+
+  # Week 2 Digital Courtroom -> Week 7 AI Extensions
+  - contract_id: week2-digital-courtroom-verdicts
+    subscriber_id: week7-ai-extensions
+    subscriber_team: week7
+    fields_consumed: [verdict_id, overall_verdict, scores, confidence, evaluated_at]
+    breaking_fields:
+      - field: overall_verdict
+        reason: LLM output schema violation rate checks enum {PASS, FAIL, WARN}
+      - field: scores
+        reason: score integer range 1-5 enforced by output schema contract
+    validation_mode: WARN
+    registered_at: "2025-01-13T09:00:00Z"
+    contact: week7-team@org.com
+
+  # Week 1 Intent Correlator -> Week 2 Digital Courtroom
+  - contract_id: week1-intent-correlator-records
+    subscriber_id: week2-digital-courtroom
+    subscriber_team: week2
+    fields_consumed: [intent_id, code_refs, governance_tags]
+    breaking_fields:
+      - field: code_refs
+        reason: verdict target_ref resolves to code_refs.file; structural change breaks reference lookup
+      - field: intent_id
+        reason: primary key linked in verdict records
+    validation_mode: WARN
+    registered_at: "2025-01-10T09:00:00Z"
+    contact: week2-team@org.com
