@@ -1,10 +1,10 @@
 {
-  "report_id": "9f39d691-944b-4d78-bcf6-bcfdca6fa7e4",
+  "report_id": "eb25874b-ce94-43e7-92ae-414a2368ee10",
   "contract_id": "week3-document-refinery-extractions",
   "snapshot_id": "fa4cdeef052035b1c81b8fba070329b8ea73cb839adc8b9479898b4af68880a4",
-  "run_timestamp": "2026-03-31T21:23:56.567837+00:00",
-  "total_checks": 41,
-  "passed": 39,
+  "run_timestamp": "2026-04-03T19:50:53.804530+00:00",
+  "total_checks": 42,
+  "passed": 40,
   "failed": 2,
   "warned": 0,
   "errored": 0,
@@ -92,6 +92,18 @@
       "records_failing": 0,
       "sample_failing": [],
       "message": "source_hash type matches contract."
+    },
+    {
+      "check_id": "source_hash.sha256_pattern",
+      "column_name": "source_hash",
+      "check_type": "pattern",
+      "status": "PASS",
+      "actual_value": "all values match SHA-256 pattern",
+      "expected": "SHA-256 hex string (64 chars)",
+      "severity": "HIGH",
+      "records_failing": 0,
+      "sample_failing": [],
+      "message": "source_hash all values match SHA-256 pattern."
     },
     {
       "check_id": "extraction_model.required",
@@ -501,5 +513,11 @@
       "sample_failing": [],
       "message": "entity_canonical_value all values conform to enum."
     }
+  ],
+  "mode": "ENFORCE",
+  "enforcement_action": "BLOCKED",
+  "blocking_violations": [
+    "fact_confidence.range",
+    "fact_confidence.statistical_drift"
   ]
 }
