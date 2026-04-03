@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-04-03T19:52:00.262948+00:00",
+  "overall_status": "PASS",
+  "embedding_drift": {
+    "status": "PASS",
+    "drift_score": 0.0,
+    "threshold": 0.15,
+    "cosine_similarity": 1.0,
+    "sample_size": 150,
+    "embedding_method": "hash_mock",
+    "interpretation": "stable"
+  },
+  "prompt_schema": {
+    "status": "PASS",
+    "valid": 55,
+    "quarantined": 0,
+    "total": 55,
+    "quarantine_path": null,
+    "sample_errors": []
+  },
+  "output_violation_rate": {
+    "status": "PASS",
+    "total_outputs": 60,
+    "schema_violations": 0,
+    "violation_rate": 0.0,
+    "trend": "unknown",
+    "baseline_rate": null,
+    "warn_threshold": 0.02,
+    "sample_violations": []
+  }
+}
