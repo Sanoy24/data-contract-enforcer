@@ -1,0 +1,60 @@
+{
+  "generated_at": "2026-04-03T19:54:03.002164+00:00",
+  "period": "2026-03-27 to 2026-04-03",
+  "data_health_score": 77,
+  "health_narrative": "Score 77/100. Minor issues detected. 1 critical violation(s) require attention.",
+  "violations_this_week": {
+    "total_violations": 4,
+    "by_severity": {
+      "CRITICAL": 2,
+      "HIGH": 2,
+      "MEDIUM": 0,
+      "LOW": 0
+    },
+    "top_violations": [
+      "The 'fact_confidence' field in week3 failed its contract check. Range violation: max=98.0 > contract_maximum=1.0. Breaking change detected. Downstream subscribers affected: week4-cartographer, week7-ai-extensions. Records failing: 150.",
+      "The 'unknown field' field in week3 failed its contract check. Range violation: max=98.0 > contract_maximum=1.0. Breaking change detected. Downstream subscribers affected: week4-cartographer, week7-ai-extensions. Records failing: 150.",
+      "The 'fact_confidence' field in week3 failed its contract check. fact_confidence mean drifted 624.0 stddev from baseline. Possible scale change. Downstream subscribers affected: week4-cartographer, week7-ai-extensions. Records failing: 0."
+    ]
+  },
+  "schema_changes": {
+    "changes_detected": 1,
+    "breaking_changes": 1,
+    "summary": "1 schema change(s) detected in the past 7 days. 1 breaking change(s). Migration action required for downstream consumers.",
+    "details": [
+      {
+        "field": "fact_confidence",
+        "change_type": "STATISTICAL_SHIFT",
+        "compatibility": "BREAKING",
+        "severity": "CRITICAL",
+        "action": "Statistical shift detected in 'fact_confidence'. Mean changed from 0.7725 to 77.2533. Possible scale change (e.g., float 0.0-1.0 to int 0-100). CRITICAL: Requires migration plan with rollback."
+      }
+    ]
+  },
+  "ai_risk_assessment": {
+    "status": "PASS",
+    "summary": "Embedding drift within bounds (score: 0.0). Prompt input schema: all records conform. LLM output violation rate: 0.00% (trend: unknown).",
+    "embedding_drift": {
+      "status": "PASS",
+      "drift_score": 0.0,
+      "threshold": 0.15
+    },
+    "prompt_schema": {
+      "status": "PASS",
+      "valid": 55,
+      "quarantined": 0
+    },
+    "output_violation_rate": {
+      "status": "PASS",
+      "violation_rate": 0.0,
+      "trend": "unknown"
+    }
+  },
+  "recommended_actions": [
+    "CRITICAL: Fix the 'fact_confidence' field in the week3 producer. The field violates contract 'week3-document-refinery-extractions' clause fact_confidence. Update the producer code to output values within the contracted range. File: contracts/runner.py validates this via check_id 'fact_confidence.range'.",
+    "HIGH: Investigate statistical drift in 'fact_confidence' for contract 'week3-document-refinery-extractions'. Run: python contracts/runner.py --contract generated_contracts/ --data outputs/ --mode ENFORCE to confirm the violation persists.",
+    "Add contracts/runner.py as a required CI step before any producer deployment. Run in AUDIT mode for the first 2 weeks, then switch to ENFORCE. Configure via: python contracts/runner.py --contract <contract.yaml> --data <data.jsonl> --mode AUDIT"
+  ],
+  "reports_analyzed": 2,
+  "violations_analyzed": 4
+}
