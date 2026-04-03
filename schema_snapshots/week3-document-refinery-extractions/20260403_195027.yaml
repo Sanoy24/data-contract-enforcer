@@ -1,0 +1,190 @@
+kind: DataContract
+apiVersion: v3.0.0
+id: week3-document-refinery-extractions
+info:
+  title: Week3 Document Refinery Extractions
+  version: 1.0.0
+  owner: week3-team
+  description: 'Auto-generated data contract for week3-document-refinery-extractions.
+    Source: outputs/week3/extractions_violated.jsonl. Each clause is machine-checkable.'
+servers:
+  local:
+    type: local
+    path: outputs/week3/extractions_violated.jsonl
+    format: jsonl
+terms:
+  usage: Internal inter-system data contract. Do not publish.
+  limitations: Confidence fields must remain in 0.0-1.0 float range.
+schema:
+  doc_id:
+    type: string
+    required: true
+    format: uuid
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+  source_path:
+    type: string
+    required: true
+  source_hash:
+    type: string
+    required: true
+    pattern: ^[a-f0-9]{64}$
+    description: SHA-256 hash. 64 hex characters.
+  extraction_model:
+    type: string
+    required: true
+    enum:
+    - claude-3-haiku-20240307
+    - claude-3-5-sonnet-20241022
+    description: 'Must be one of: claude-3-haiku-20240307, claude-3-5-sonnet-20241022'
+  processing_time_ms:
+    type: integer
+    required: true
+    minimum: 0
+    description: Processing time in milliseconds. Must be non-negative.
+    _observed_stats:
+      min: 509.0
+      max: 2991.0
+      mean: 1630.8417
+      p25: 1014.0
+      p50: 1668.0
+      p75: 2315.5
+      p95: 2662.0
+      p99: 2937.0
+      stddev: 710.5538
+  extracted_at:
+    type: string
+    required: true
+    format: date-time
+    description: ISO 8601 timestamp.
+  token_input:
+    type: integer
+    required: true
+    _observed_stats:
+      min: 2012.0
+      max: 5954.0
+      mean: 3955.8378
+      p25: 2798.0
+      p50: 3839.0
+      p75: 4922.0
+      p95: 5903.0
+      p99: 5954.0
+      stddev: 1230.8188
+    llm_annotations:
+      description: 'Auto-inferred: ''token input'' (int64). Sample values: [5854,
+        2798, 4281].'
+      business_rule: type=int64, non-null
+      cross_column_relationships: ''
+      method: heuristic
+  token_output:
+    type: integer
+    required: true
+    _observed_stats:
+      min: 416.0
+      max: 1499.0
+      mean: 915.3475
+      p25: 654.0
+      p50: 884.0
+      p75: 1173.0
+      p95: 1357.0
+      p99: 1499.0
+      stddev: 307.5257
+    llm_annotations:
+      description: 'Auto-inferred: ''token output'' (int64). Sample values: [1161,
+        644, 860].'
+      business_rule: type=int64, non-null
+      cross_column_relationships: ''
+      method: heuristic
+  fact_fact_id:
+    type: string
+    required: false
+    format: uuid
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+  fact_text:
+    type: string
+    required: false
+    llm_annotations:
+      description: 'Auto-inferred: ''fact text'' (str). Sample values: [The migration
+        to cloud infrastructure saved $180,0, Customer churn rate decreased to 4.2%
+        after the up, The API processes approximately 10,000 requests pe].'
+      business_rule: type=str
+      cross_column_relationships: ''
+      method: heuristic
+  fact_entity_refs:
+    type: string
+    required: false
+  fact_confidence:
+    type: number
+    required: false
+    minimum: 0.0
+    maximum: 1.0
+    description: Confidence score. Must remain 0.0-1.0 float. BREAKING if changed
+      to 0-100 integer scale.
+    _observed_stats:
+      min: 55.0
+      max: 98.0
+      mean: 77.2533
+      p25: 67.0
+      p50: 77.0
+      p75: 88.0
+      p95: 96.0
+      p99: 98.0
+      stddev: 12.2569
+  fact_page_ref:
+    type: number
+    required: false
+    _observed_stats:
+      min: 1.0
+      max: 5.0
+      mean: 2.8595
+      p25: 2.0
+      p50: 3.0
+      p75: 4.0
+      p95: 5.0
+      p99: 5.0
+      stddev: 1.293
+  fact_source_excerpt:
+    type: string
+    required: false
+    enum:
+    - '...verbatim excerpt from source document...'
+    description: 'Must be one of: ...verbatim excerpt from source document...'
+  entity_entity_id:
+    type: string
+    required: false
+    format: uuid
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+  entity_name:
+    type: string
+    required: false
+    enum:
+    - Acme Corp
+    - John Smith
+    - '2024-01-15'
+    - $2.5M
+    - Austin TX
+    description: 'Must be one of: Acme Corp, John Smith, 2024-01-15, $2.5M, Austin
+      TX'
+  entity_type:
+    type: string
+    required: false
+  entity_canonical_value:
+    type: string
+    required: false
+    enum:
+    - entity_0_canonical
+    - entity_1_canonical
+    - entity_2_canonical
+    description: 'Must be one of: entity_0_canonical, entity_1_canonical, entity_2_canonical'
+quality:
+  type: SodaChecks
+  specification:
+    checks for week3-document-refinery-extractions:
+    - row_count >= 1
+    - missing_count(doc_id) = 0
+    - missing_count(source_path) = 0
+    - missing_count(source_hash) = 0
+    - missing_count(extraction_model) = 0
+    - missing_count(processing_time_ms) = 0
+lineage:
+  upstream: []
+  downstream: []
