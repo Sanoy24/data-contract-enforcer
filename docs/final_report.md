@@ -457,3 +457,16 @@ uv run python contracts/schema_analyzer.py \
 |---|---|---|
 | week4-cartographer | `doc_id, extracted_facts, extraction_model` | Confidence used for node ranking — inflated values corrupt graph ordering |
 | week7-ai-extensions | `extracted_facts.confidence, extracted_facts.text, doc_id, source_path` | Embedding drift baseline invalidated; confidence-weighted text selection produces wrong samples |
+
+### Production Tool Comparison: Monte Carlo vs. Our Implementation
+
+How would an enterprise data observability tool like **Monte Carlo** or **dbt Contracts** handle this exact same `fact_confidence` scale shift?
+
+**1. Detection:**
+- **dbt Contracts:** Would miss this violation by default. dbt contracts enforce data *types* and *nullability* at the warehouse level. Since the column remained a numeric type (float/int), it would pass cleanly unless an explicit `accepted_range` test was manually written by an engineer.
+- **Monte Carlo:** Would likely catch this. Monte Carlo relies heavily on unsupervised anomaly detection to monitor statistical distributions in numeric columns. It would flag the sudden 100x shift in the mean of `fact_confidence` as an incident.
+- **Our System:** Caught the shift immediately through BOTH an explicit, auto-generated `minimum: 0.0, maximum: 1.0` contract bound (structural) AND a 624 stddev z-score check (statistical drift) created during the initial data profiling run.
+
+**2. Blast Radius & Triage:**
+- **Monte Carlo:** Tracks lineage at the table/view level. It would notify data owners that the downstream `week4-cartographer` dataset depends on the anomalous column.
+- **Our System:** Not only identified the downstream subscribers via the Contract Registry, but performed a BFS traversal through actual semantic lineage logic, and automatically generated a Git Blame chain prioritizing the explicit commit that caused the corruption. Our system provides direct, actionable remediation code paths for developers directly in the report, whereas enterprise tools often output generalized incident alerts to a centralized dashboard.
