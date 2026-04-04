@@ -6,11 +6,11 @@ info:
   version: 1.0.0
   owner: week3-team
   description: 'Auto-generated data contract for week3-document-refinery-extractions.
-    Source: outputs/week3/extractions_violated.jsonl. Each clause is machine-checkable.'
+    Source: outputs/week3/extractions.jsonl. Each clause is machine-checkable.'
 servers:
   local:
     type: local
-    path: outputs/week3/extractions_violated.jsonl
+    path: outputs/week3/extractions.jsonl
     format: jsonl
 terms:
   usage: Internal inter-system data contract. Do not publish.
@@ -120,15 +120,15 @@ schema:
     description: Confidence score. Must remain 0.0-1.0 float. BREAKING if changed
       to 0-100 integer scale.
     _observed_stats:
-      min: 55.0
-      max: 98.0
-      mean: 77.2533
-      p25: 67.0
-      p50: 77.0
-      p75: 88.0
-      p95: 96.0
-      p99: 98.0
-      stddev: 12.2569
+      min: 0.55
+      max: 0.98
+      mean: 0.7725
+      p25: 0.67
+      p50: 0.77
+      p75: 0.88
+      p95: 0.96
+      p99: 0.98
+      stddev: 0.1226
   fact_page_ref:
     type: number
     required: false

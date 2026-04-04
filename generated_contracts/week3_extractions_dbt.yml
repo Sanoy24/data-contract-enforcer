@@ -2,7 +2,7 @@ version: 2
 models:
 - name: week3_document_refinery_extractions
   description: 'Auto-generated data contract for week3-document-refinery-extractions.
-    Source: outputs/week3/extractions_violated.jsonl. Each clause is machine-checkable.'
+    Source: outputs/week3/extractions.jsonl. Each clause is machine-checkable.'
   columns:
   - name: doc_id
     description: ''
