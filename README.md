@@ -167,6 +167,7 @@ data-contract-enforcer/
 ├── enforcer_report/            # Auto-generated stakeholder report
 ├── outputs/                    # Input data (weeks 1-5 + LangSmith traces)
 ├── scripts/                    # Utility scripts (sample data, violation injection)
+├── tests/                      # Pytest test suite (97 tests)
 ├── DOMAIN_NOTES.md             # Phase 0 domain reconnaissance
 ├── .env.example                # LLM provider configuration template
 ├── requirements.txt            # pip dependencies
@@ -185,3 +186,51 @@ data-contract-enforcer/
 ```bash
 uv run python contracts/runner.py --contract <contract.yaml> --data <data.jsonl> --mode ENFORCE
 ```
+
+## Configuration Reference
+
+All LLM configuration is via environment variables. Without any configuration, the system uses heuristic fallbacks (no API key needed).
+
+| Variable | Default | Description |
+|---|---|---|
+| `LLM_PROVIDER` | auto-detect | Provider: `openai`, `anthropic`, `gemini`, `ollama`, `openrouter` |
+| `LLM_MODEL` | provider-dependent | Model name (e.g. `llama3.2`, `gemini-2.0-flash`, `gpt-4o-mini`) |
+| `LLM_API_KEY` | (none) | API key for the chosen provider |
+| `LLM_BASE_URL` | (none) | Custom base URL (required for ollama/openrouter) |
+| `OPENAI_API_KEY` | (none) | OpenAI key (auto-detected if `LLM_PROVIDER` not set) |
+| `ANTHROPIC_API_KEY` | (none) | Anthropic key (auto-detected) |
+| `GEMINI_API_KEY` | (none) | Google Gemini key (auto-detected) |
+| `OPENROUTER_API_KEY` | (none) | OpenRouter key (auto-detected) |
+| `OLLAMA_BASE_URL` | `http://localhost:11434/v1` | Ollama endpoint |
+| `EMBEDDING_PROVIDER` | same as `LLM_PROVIDER` | Separate provider for embeddings |
+| `EMBEDDING_MODEL` | provider-dependent | Embedding model name |
+
+**Provider defaults:**
+
+| Provider | Chat Model | Embedding Model | Base URL |
+|---|---|---|---|
+| `openai` | `gpt-4o-mini` | `text-embedding-3-small` | (default) |
+| `anthropic` | `claude-3-5-haiku-20241022` | (none, uses mock) | (default) |
+| `gemini` | `gemini-2.0-flash` | `text-embedding-004` | `https://generativelanguage.googleapis.com/v1beta/openai/` |
+| `ollama` | `llama3.2` | `nomic-embed-text` | `http://localhost:11434/v1` |
+| `openrouter` | `openai/gpt-4o-mini` | `openai/text-embedding-3-small` | `https://openrouter.ai/api/v1` |
+
+## Running Tests
+
+```bash
+uv run pytest tests/ -v
+```
+
+97 tests across 7 modules covering all contract enforcement components.
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `"No LLM configured -- using heuristic fallbacks"` | No API key set | Expected behavior. Set `LLM_PROVIDER` + key in `.env` for real LLM features, or ignore for heuristic mode. |
+| `ModuleNotFoundError: No module named 'contracts'` | Dependencies not installed | Run `uv sync` or `pip install -r requirements.txt` |
+| Git blame returns empty in attributor | Working directory is not the producer repo | Pass `--repo-root /path/to/repo` to `contracts/attributor.py` |
+| Schema analyzer finds no diff | Only one snapshot exists | Run `contracts/generator.py` twice on different data to create 2+ snapshots |
+| Statistical drift not firing on violated data | Baseline was written from violated data | Delete `schema_snapshots/baselines.json`, run on clean data first, then on violated data |
+| `Embedding drift is always 0.0` | Same data used for baseline and comparison | Expected when data hasn't changed. Use different data to test drift detection. |
+| `UnicodeEncodeError` on Windows | Console can't render certain characters | Set `PYTHONIOENCODING=utf-8` or use `chcp 65001` before running |
