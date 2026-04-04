@@ -9,7 +9,6 @@ Usage:
 """
 
 import argparse
-import hashlib
 import json
 import uuid
 from datetime import datetime, timezone
@@ -28,7 +27,12 @@ except ImportError:
 # Extension 1: Embedding Drift Detection
 # ---------------------------------------------------------------------------
 
-from contracts.llm_client import embed_texts as _llm_embed_texts, describe_config
+try:
+    from contracts.llm_client import embed_texts as _llm_embed_texts, describe_config
+except ModuleNotFoundError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from contracts.llm_client import embed_texts as _llm_embed_texts, describe_config
 
 
 def check_embedding_drift(
@@ -48,7 +52,7 @@ def check_embedding_drift(
             "threshold": threshold,
         }
 
-    vecs = embed_texts(texts)
+    vecs, method = _llm_embed_texts(texts)
     centroid = vecs.mean(axis=0)
 
     bp = Path(baseline_path)
@@ -60,7 +64,7 @@ def check_embedding_drift(
             "drift_score": 0.0,
             "threshold": threshold,
             "sample_size": len(texts),
-            "embedding_method": "openai" if _HAS_OPENAI else "hash_mock",
+            "embedding_method": method,
             "message": "Baseline established. Run again to detect drift.",
         }
 
@@ -77,7 +81,7 @@ def check_embedding_drift(
         "threshold": threshold,
         "cosine_similarity": round(cosine_sim, 4),
         "sample_size": len(texts),
-        "embedding_method": "openai" if _HAS_OPENAI else "hash_mock",
+        "embedding_method": method,
         "interpretation": "semantic content shifted" if drift > threshold else "stable",
     }
 
@@ -391,6 +395,8 @@ def main():
     print(f"{'='*60}")
     print(f"  Extractions: {args.extractions}")
     print(f"  Verdicts: {args.verdicts}")
+    for line in describe_config().split("\n"):
+        print(f"  {line}")
     print()
 
     results = run_all_extensions(

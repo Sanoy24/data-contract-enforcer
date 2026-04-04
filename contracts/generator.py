@@ -439,7 +439,12 @@ _KNOWN_MARKERS = (
     "_tokens", "_cost", "_ref", "_refs", "_tags",
 )
 
-from contracts.llm_client import chat_completion, get_llm_config
+try:
+    from contracts.llm_client import chat_completion, get_llm_config
+except ModuleNotFoundError:
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from contracts.llm_client import chat_completion, get_llm_config
 
 
 def _is_ambiguous(col_name: str, clause: dict) -> bool:
