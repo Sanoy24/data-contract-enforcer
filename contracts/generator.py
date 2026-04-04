@@ -24,14 +24,16 @@ import yaml
 # ---------------------------------------------------------------------------
 
 
-def load_jsonl(path: str) -> list[dict]:
-    """Load a JSONL file into a list of dicts."""
+def load_jsonl(path: str, max_records: int | None = None) -> list[dict]:
+    """Load a JSONL file into a list of dicts. Use max_records to cap memory."""
     records = []
     with open(path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line:
                 records.append(json.loads(line))
+                if max_records and len(records) >= max_records:
+                    break
     return records
 
 

@@ -200,8 +200,11 @@ def embed_texts(texts: list[str], n: int = 200) -> tuple[np.ndarray, str]:
     return _embed_mock(sample), "hash_mock"
 
 
-def _embed_openai_compat(texts: list[str], cfg: dict) -> np.ndarray | None:
-    """Embeddings via any OpenAI-compatible API (OpenAI, Ollama, OpenRouter, Gemini)."""
+def _embed_openai_compat(texts: list[str], cfg: dict, batch_size: int = 100) -> np.ndarray | None:
+    """Embeddings via any OpenAI-compatible API, with batching for large inputs.
+
+    Sends texts in chunks of batch_size to avoid API timeouts on large datasets.
+    """
     try:
         from openai import OpenAI
         kwargs = {}
@@ -213,8 +216,12 @@ def _embed_openai_compat(texts: list[str], cfg: dict) -> np.ndarray | None:
             kwargs["api_key"] = "ollama"
 
         client = OpenAI(**kwargs)
-        resp = client.embeddings.create(input=texts, model=cfg["model"])
-        return np.array([e.embedding for e in resp.data])
+        all_embeddings = []
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i : i + batch_size]
+            resp = client.embeddings.create(input=batch, model=cfg["model"])
+            all_embeddings.extend([e.embedding for e in resp.data])
+        return np.array(all_embeddings)
     except Exception:
         return None
 

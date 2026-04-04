@@ -24,13 +24,16 @@ import yaml
 # Imports from generator (reuse flatten logic)
 # ---------------------------------------------------------------------------
 
-def load_jsonl(path: str) -> list[dict]:
+def load_jsonl(path: str, max_records: int | None = None) -> list[dict]:
+    """Load JSONL file. Use max_records to cap memory for large files."""
     records = []
     with open(path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line:
                 records.append(json.loads(line))
+                if max_records and len(records) >= max_records:
+                    break
     return records
 
 
